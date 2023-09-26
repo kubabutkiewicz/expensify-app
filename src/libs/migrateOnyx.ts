@@ -1,4 +1,3 @@
-import _ from 'underscore';
 import Log from './Log';
 import RenamePriorityModeKey from './migrations/RenamePriorityModeKey';
 import RenameExpensifyNewsStatus from './migrations/RenameExpensifyNewsStatus';
@@ -6,7 +5,7 @@ import AddLastVisibleActionCreated from './migrations/AddLastVisibleActionCreate
 import PersonalDetailsByAccountID from './migrations/PersonalDetailsByAccountID';
 import RenameReceiptFilename from './migrations/RenameReceiptFilename';
 
-export default function () {
+export default function (): Promise<void> {
     const startTime = Date.now();
     Log.info('[Migrate Onyx] start');
 
@@ -17,15 +16,12 @@ export default function () {
         // Reduce all promises down to a single promise. All promises run in a linear fashion, waiting for the
         // previous promise to finish before moving onto the next one.
         /* eslint-disable arrow-body-style */
-        _.reduce(
-            migrationPromises,
-            (previousPromise, migrationPromise) => {
+        migrationPromises
+            .reduce((previousPromise, migrationPromise) => {
                 return previousPromise.then(() => {
                     return migrationPromise();
                 });
-            },
-            Promise.resolve(),
-        )
+            }, Promise.resolve())
 
             // Once all migrations are done, resolve the main promise
             .then(() => {
